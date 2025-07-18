@@ -1,0 +1,30 @@
+{
+  "name": "youtube-summary",
+  "version": "1.0.1",
+  "description": "CLI tool to summarize YouTube video captions using OpenAI.",
+  "main": "dist/index.js",
+  "bin": {
+    "youtube-summary": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "keywords": ["youtube", "caption", "summary", "openai", "cli"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "langchain": "^0.3.30",
+    "youtube-caption-extractor": "^1.8.2",
+    "yargs": "^17.0.0",
+    "dotenv": "^16.0.0",
+    "@langchain/google-genai": "^0.2.15",
+    "@langchain/openai": "^0.0.20",
+    "@langchain/anthropic": "^0.3.24"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/yargs": "^17.0.0"
+  }
+} 
