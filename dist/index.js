@@ -61,9 +61,9 @@ async function summarizeWithLLM(text, provider, modelName, apiKey) {
         llm = new google_genai_1.ChatGoogleGenerativeAI({
             model: modelName,
             apiKey,
-            maxOutputTokens: 2048,
         });
         const res = await llm.invoke([new messages_1.HumanMessage(prompt)]);
+        console.log(res);
         if (typeof res.content === 'string') {
             return res.content;
         }

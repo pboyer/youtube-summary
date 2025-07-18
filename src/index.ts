@@ -13,14 +13,14 @@ async function fetchCaptions(videoId: string): Promise<string> {
   return captions.map(c => c.text).join(' ');
 }
 
-async function summarizeWithLLM(text: string, provider: string, modelName: string, apiKey: string): Promise<string> {
+async function summarizeWithLLM(text: string, provider: string, modelName: string, apiKey: string, maxTokens: number): Promise<string> {
   let llm;
   const prompt = `Summarize the following YouTube video captions:\n${text}`;
   if (provider === 'openai') {
     llm = new ChatOpenAI({
       modelName: modelName,
       openAIApiKey: apiKey,
-      maxTokens: 2048,
+      maxTokens,
     });
     const res = await llm.invoke(prompt);
     if (typeof res.content === 'string') {
@@ -36,7 +36,7 @@ async function summarizeWithLLM(text: string, provider: string, modelName: strin
     llm = new ChatAnthropic({
       modelName: modelName,
       anthropicApiKey: apiKey,
-      maxTokens: 2048,
+      maxTokens,
     });
     const res = await llm.invoke(prompt);
     if (typeof res.content === 'string') {
@@ -52,7 +52,7 @@ async function summarizeWithLLM(text: string, provider: string, modelName: strin
     llm = new ChatGoogleGenerativeAI({
       model: modelName,
       apiKey,
-      maxOutputTokens: 2048,
+      maxOutputTokens: maxTokens,
     });
     const res = await llm.invoke([new HumanMessage(prompt)]);
     if (typeof res.content === 'string') {
@@ -69,7 +69,7 @@ async function summarizeWithLLM(text: string, provider: string, modelName: strin
 
 async function main() {
   const argv = await yargs(hideBin(process.argv))
-    .usage('Usage: $0 --id <youtube_video_id> [--provider <provider>] [--model <model>]')
+    .usage('Usage: $0 --id <youtube_video_id> [--provider <provider>] [--model <model>] [--max-tokens <n>]')
     .option('id', {
       alias: 'i',
       type: 'string',
@@ -88,12 +88,19 @@ async function main() {
       default: 'gemini-2.5-flash',
       describe: 'Model to use (e.g., gemini-2.5-flash, gpt-4o, claude-3-haiku-20240307)'
     })
+    .option('max-tokens', {
+      alias: 'k',
+      type: 'number',
+      default: 4096,
+      describe: 'Maximum tokens for the LLM response (default: 4096)'
+    })
     .help()
     .argv;
 
   const videoId = argv.id as string;
   const provider = argv.provider as string;
   const modelName = argv.model as string;
+  const maxTokens = argv['max-tokens'] as number;
   let apiKey: string | undefined;
   if (provider === 'openai') {
     apiKey = process.env.OPENAI_API_KEY;
@@ -123,7 +130,7 @@ async function main() {
       process.exit(1);
     }
     console.log(`Summarizing with ${provider} model: ${modelName}...`);
-    const summary = await summarizeWithLLM(captions, provider, modelName, apiKey);
+    const summary = await summarizeWithLLM(captions, provider, modelName, apiKey, maxTokens);
     console.log('\nSummary:\n');
     console.log(summary);
   } catch (err) {
